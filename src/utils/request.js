@@ -134,7 +134,7 @@ const requestHttp={
       }
     }
   },
-  delete(url,params){
+  async delete(url,params){
     let _params
     if(Object.is(params,undefined||null)){
       _params=''
@@ -147,15 +147,19 @@ const requestHttp={
       }
       _params=_params.substring(0,_params.length-1)
       if(_params){
-        return service.delete(`${url}${_params}`).catch((error)=>{
+        try {
+          return await service.delete(`${url}${_params}`)
+        } catch (error) {
           message.error(error.msg)
-          return Promise.reject(error)
-        })
+          return await Promise.reject(error)
+        }
       }else{
-        return service.delete(url).catch(error=>{
-          message.error(error.msg)
-          return Promise.reject(error)
-        })
+        try {
+          return await service.delete(url)
+        } catch (error_1) {
+          message.error(error_1.msg)
+          return await Promise.reject(error_1)
+        }
       }
     }
   },

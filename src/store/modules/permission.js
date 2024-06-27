@@ -28,10 +28,10 @@ export function filterAsyncRoutes(routes, roles) {
     if (hasPermission(roles, tmp)) {
       let component=tmp.component
       if(route.component){
-        if(component==="Layout"){
+        if(component==="Layout"){               //如果是Layout组件，就直接引入Layout组件
           tmp.component=Layout
         }else{
-          tmp.component=(resolve) => require([`@/views/${component}`], resolve)
+          tmp.component=(resolve) => require([`@/views${component}`], resolve)   //否则就动态引入组件
         }
       }
       if (tmp.children) {
