@@ -2,9 +2,15 @@
     <div>
         <el-main>
             <!--查询表单-->
-            <el-form :inline="true" :model="makerModel" size="small" label-width="100px">
+            <el-form :inline="true" :model="brandModel" size="small" label-width="100px">
                 <el-form-item label="厂商名称">
-                    <el-input v-model="makerModel.name" placeholder="厂商名称"></el-input>
+                    <el-select v-model="brandModel.autoBrand.mid" placeholder="厂商名称">
+                        <el-option v-for="item in makerList" :key="item.id" :label="item.name" :value="item.id">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="品牌名称">
+                    <el-input v-model="brandModel.autoBrand.brandName" placeholder="品牌名称"></el-input>
                 </el-form-item>
                 <el-form-item>
                     <el-button type="primary" icon="el-icon-search" @click="onSubmit">查询</el-button>
@@ -16,7 +22,7 @@
             <!--查询表单结束-->
             <!--数据表格-->
             <el-table ref="table" :data="tableList" style="width: 100%; margin-bottom: 20px; " max-height="500"
-                v-loading="loading" row-key="id" border stripe @selection-change="handleSelectionChange">
+                v-loading="loading" row-key="autoBrand.id" border stripe @selection-change="handleSelectionChange">
                 <el-table-column fixed type="selection" reserve-selection width="55">
                 </el-table-column>
                 <el-table-column label="序号" width="55">
@@ -24,9 +30,9 @@
                         <span>{{ (start - 1) * size + scope.$index + 1 }}</span>
                     </template>
                 </el-table-column>
-                <el-table-column prop="name" label="厂商名称">
+                <el-table-column prop="makerName" label="厂商名称">
                 </el-table-column>
-                <el-table-column prop="orderLetter" label="排序字母">
+                <el-table-column prop="autoBrand.brandName" label="品牌名称">
                 </el-table-column>
                 <el-table-column label="操作" width="200">
                     <template slot-scope="scope">
@@ -58,9 +64,15 @@
                 </span>
             </el-dialog>
             <el-dialog :title="titleMap[dialogStatus]" :visible.sync="dialogFormVisible">
-                <el-form :model="saveMaker" ref="form" :rules="rules" label-width="100px">
-                    <el-form-item label="厂商名称" prop="name">
-                        <el-input v-model="saveMaker.name" autocomplete="off"></el-input>
+                <el-form :model="savebrand" ref="form" :rules="rules" label-width="100px">
+                    <el-form-item label="厂商名称" prop="mid">
+                        <el-select v-model="savebrand.mid" placeholder="厂商名称">
+                            <el-option v-for="item in makerList" :key="item.id" :label="item.name" :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="品牌名称" prop="brandName">
+                        <el-input v-model="savebrand.brandName" autocomplete="off"></el-input>
                     </el-form-item>
                 </el-form>
                 <div slot="footer" class="dialog-footer">
@@ -76,43 +88,62 @@
 </template>
 
 <script>
-//导入auto_maker.js
-import makerApi from '@/api/auto_maker.js'
+//导入auto_brand.js
 import brandApi from '@/api/auto_brand.js'
+import makerApi from '@/api/auto_maker.js'
 export default {
-    name: 'makerList',
+    name: 'brandList',
     data() {
         //数据模型
         return {
-            makerModel: {},
-            updateModel: {},
+            brandModel: {
+                autoBrand: {
+                    id: '',
+                    mid: '',
+                    brandName: '',
+                },
+                makerName: '',
+            },
             tableList: [],
+            makerList: [],         //厂商列表(下拉列表)
             start: 1,
             size: 7,
             total: 0,
             loading: true,
-            saveMaker: {},
+            savebrand: {},       //新增或修改的数据对象
             dialogFormVisible: false,
             formLabelWidth: '120px',
             rules: {
-                name: [
+                mid: [
                     { required: true, message: '请输入厂商名称', trigger: 'blur' },
                     //{ min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }
+                ],
+                brandName: [
+                    { required: true, message: '请输入品牌名称', trigger: 'blur' },
                 ],
             },
             dialogStatus: '',      //新增或修改
             titleMap: {
-                create: '新增厂商',
-                update: '修改厂商'
+                create: '新增',
+                update: '修改'
             },
             deleteBox: false,
             deleteAllBox: false,
-            line: {},
+            line: {
+                autoBrand: {
+                    id: '',
+                    mid: '',
+                    brandName: '',
+                },
+                makerName: '',
+            },
             lines: [],
         }
     },
-    activated() {
+    async activated() {
         //页面加载时调用
+        const res = await makerApi.search(1, 10000, {});  //查询所有厂商, 在页面加载时调用
+        this.makerList = res.data.records;
         this.withLoading(this.search)();
     },
 
@@ -133,7 +164,7 @@ export default {
         async search(start = 1) {
             //查询, start为当前页码, 默认为1
             this.start = start;
-            const res = await makerApi.search(this.start, this.size, this.makerModel);
+            const res = await brandApi.search(this.start, this.size, this.brandModel.autoBrand);
             if (res.code == 200) {
                 this.tableList = res.data.records;
                 this.total = res.data.total;
@@ -142,24 +173,24 @@ export default {
             }
         },
         onSubmit() {
-            //makerModel 读取表单数据, 当前就一个文本框
+            //brandModel 读取表单数据, 当前就一个文本框
             this.$refs.table.clearSelection(); //清空勾选的状态
             this.withLoading(this.search)();
         },
         resetForm() {
-            this.tableList = [];
-            this.makerModel = {};
+            resetModel(this.tableList);
+            resetModel(this.brandModel);  //不破坏brandModel的结构, 并将它置空
             this.$refs.table.clearSelection(); //清空勾选的状态
             this.withLoading(this.search)();
         },
         handleCreate() {
             this.dialogStatus = 'create';
-            this.saveMaker = {};
+            resetModel(this.savebrand);
             this.dialogFormVisible = true;
             this.$nextTick(() => { this.$refs['form'].clearValidate(); });
         },
         handleUpdate(row) {
-            this.saveMaker = row;
+            this.savebrand = row.autoBrand;
             this.dialogStatus = 'update';
             this.dialogFormVisible = true;
             this.$nextTick(() => { this.$refs['form'].clearValidate(); });
@@ -172,13 +203,13 @@ export default {
             });
         },
         async create() {
-            this.$refs['form'].validate(async (valid) => {  //校验
+            this.$refs['form'].validate(async valid => {  //校验
                 if (!valid) {
                     return false;
                 } else {
                     //新增操作
                     this.loading = true;
-                    const res = await makerApi.create(this.saveMaker);
+                    const res = await brandApi.create(this.savebrand);
                     this.loading = false;
                     if (res.code == 200) {
                         this.$message.success('新增成功');
@@ -194,7 +225,7 @@ export default {
         async update() {
             //更新操作
             this.loading = true;
-            const res = await makerApi.update(this.saveMaker);
+            const res = await brandApi.update(this.savebrand);
             this.loading = false;
             if (res.code == 200) {
                 this.$message.success('更新成功');
@@ -209,13 +240,7 @@ export default {
             //console.log(row);
             //删除操作
             this.loading = true;
-            const hasChildren = await brandApi.hasChildren(row.id);
-            if (hasChildren.message == 'yes') {
-                this.loading = false;
-                this.$message.error('请先删除该厂商下的品牌');
-                return;
-            }
-            const res = await makerApi.delete(row);
+            const res = await brandApi.delete(row.autoBrand.id);
             this.loading = false;
             if (res.code == 200) {
                 this.$message.success('删除成功');
@@ -228,9 +253,31 @@ export default {
             // val 是一个包含选中行数据的数组
             this.lines = val;
             //console.log('当前选中项', val);
-        }
+        },
     }
 }
-
+function resetModel(model) {
+    Object.keys(model).forEach(key => {
+        if (typeof model[key] === 'object' && model[key] !== null) {
+            // 如果是对象且不为null，递归调用
+            resetModel(model[key]);
+        } else if (Array.isArray(model[key])) {
+            // 如果是数组，置为空数组
+            model[key] = [];
+        } else if (typeof model[key] === 'string') {
+            // 如果是字符串，置为空字符串
+            model[key] = '';
+        } else if (typeof model[key] === 'number') {
+            // 如果是数字，置为0或其他适当的“空”值
+            model[key] = '';
+        } else if (typeof model[key] === 'boolean') {
+            // 如果是布尔值，可能置为false或true，取决于具体情况
+            model[key] = false;
+        } else {
+            // 其他类型根据需要处理
+            model[key] = null;
+        }
+    });
+}
 </script>
 <style></style>
