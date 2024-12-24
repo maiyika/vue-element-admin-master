@@ -15,5 +15,9 @@ export default {
     },
     async hasChildren(data){
         return await requestHttp.get(`/rental/autoBrand/hasChildren/${data}`)
-    }
+    },
+    async selectByMakerId(data){
+        return await requestHttp.get(`/rental/autoBrand/${data}`)
+    },
+    
 }

@@ -12,5 +12,8 @@ export default {
     },
     async create(data){
         return await requestHttp.post(`/rental/autoMaker/save`, data)
+    },
+    async selectAll(){
+        return await requestHttp.get(`/rental/autoMaker`)
     }
 }

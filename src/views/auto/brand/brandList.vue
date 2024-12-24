@@ -17,6 +17,7 @@
                     <el-button type="warning" icon="el-icon-refresh" @click="resetForm">重置</el-button>
                     <el-button type="success" icon="el-icon-plus" @click="handleCreate">新增</el-button>
                     <el-button type="danger" icon="el-icon-delete" @click="deleteAllBox = true;">删除选中</el-button>
+                    <el-button type="primary" icon="el-icon-delete" @click="exportExcel">导出</el-button>
                 </el-form-item>
             </el-form>
             <!--查询表单结束-->
@@ -91,6 +92,7 @@
 //导入auto_brand.js
 import brandApi from '@/api/auto_brand.js'
 import makerApi from '@/api/auto_maker.js'
+import { getToken } from '@/utils/auth.js'
 export default {
     name: 'brandList',
     data() {
@@ -254,6 +256,10 @@ export default {
             this.lines = val;
             //console.log('当前选中项', val);
         },
+        exportExcel(){
+            let url=`${process.env.VUE_APP_BASE_API}rental/autoBrand/exportExcel?token=${getToken()}`
+            window.open(url)
+        }
     }
 }
 function resetModel(model) {

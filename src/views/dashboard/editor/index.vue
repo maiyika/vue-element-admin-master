@@ -8,7 +8,7 @@
       <github-corner style="position: absolute; top: 0px; border: 0; right: 0;" />
       <div class="info-container">
         <span class="display_name">{{ name }}</span>
-        <span style="font-size:20px;padding-top:20px;display:inline-block;">Editor's Dashboard</span>
+        <span style="font-size:20px;padding-top:20px;display:inline-block;">用户的首页</span>
       </div>
     </div>
     <div>
@@ -27,7 +27,7 @@ export default {
   components: { PanThumb, GithubCorner },
   data() {
     return {
-      emptyGif: 'https://wpimg.wallstcn.com/007ef517-bafd-4066-aae4-6883632d9646'
+      emptyGif: 'https://ts1.cn.mm.bing.net/th/id/R-C.001bca495c8a641fd6ab77146bda3b8a?rik=2zvCXtD33lSE8Q&riu=http%3a%2f%2fpic.616pic.com%2fys_bnew_img%2f00%2f10%2f83%2fTNxaZt9AVR.jpg&ehk=blkivNstr2tRDvv%2bjjDcNh1JGyHdT%2bj599XjY5qtaVg%3d&risl=&pid=ImgRaw&r=0'
     }
   },
   computed: {

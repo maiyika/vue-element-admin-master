@@ -56,7 +56,7 @@
                 </el-form>
                 <div slot="footer" class="dialog-footer">
                     <el-button @click="cancel">取 消</el-button>
-                    <el-button type="primary" @click="dialogStatus === 'create' ? create() : update();">确 定</el-button>
+                    <el-button type="primary" @click="confirmForm">确 定</el-button>
                 </div>
             </el-dialog>
             <!--对话框结束-->
@@ -239,10 +239,6 @@ export default {
         },
         handleNodeClick(data) {
             //先判断是否是顶级节点
-            if (data.pid == -1) {
-                this.$message.error('顶级节点不可选择');
-                return;
-            }
             this.saveDept.pid = data.id;
             this.saveDept.parentName = data.deptName;
         },
@@ -265,6 +261,16 @@ export default {
                     this.treeData = res.data;
                 }
             });
+        },
+        confirmForm(){
+            if(this.saveDept.parentName =='所有部门'){
+                this.saveDept.parentName = '';
+            }
+            if(this.dialogStatus == 'create'){
+                this.create();
+            }else{
+                this.update();
+            }
         }
     }
 }
